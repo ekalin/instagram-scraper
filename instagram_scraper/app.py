@@ -168,7 +168,7 @@ class InstagramScraper(object):
             if self.quit:
                 return
             try:
-                response = self.session.get(timeout=CONNECT_TIMEOUT, *args, **kwargs)
+                response = self.session.get(timeout=CONNECT_TIMEOUT, cookies=self.cookies, *args, **kwargs)
                 if response.status_code == 404:
                     return
                 response.raise_for_status()
@@ -221,6 +221,7 @@ class InstagramScraper(object):
 
         if login_text.get('authenticated') and login.status_code == 200:
             self.logged_in = True
+            self.session.headers = {'user-agent': CHROME_WIN_UA}
             self.rhx_gis = self.get_shared_data()['rhx_gis']
         else:
             self.logger.error('Login failed for ' + self.login_user)
@@ -561,6 +562,7 @@ class InstagramScraper(object):
 
     def scrape(self, executor=concurrent.futures.ThreadPoolExecutor(max_workers=MAX_CONCURRENT_DOWNLOADS)):
         """Crawls through and downloads user's media"""
+        self.session.headers = {'user-agent': STORIES_UA}
         try:
             for username in self.usernames:
                 self.posts = []
@@ -895,7 +897,7 @@ class InstagramScraper(object):
                                 downloaded_before = downloaded
                                 headers['Range'] = 'bytes={0}-'.format(downloaded_before)
 
-                                with self.session.get(url, headers=headers, stream=True, timeout=CONNECT_TIMEOUT) as response:
+                                with self.session.get(url, cookies=self.cookies, headers=headers, stream=True, timeout=CONNECT_TIMEOUT) as response:
                                     if response.status_code == 404:
                                         #instagram don't lie on this
                                         break
