@@ -173,7 +173,7 @@ class InstagramScraper(object):
                     return
                 response.raise_for_status()
                 content_length = response.headers.get('Content-Length')
-                if content_length is None or len(response.content) != int(content_length):
+                if content_length is not None and len(response.content) != int(content_length):
                     #if content_length is None we repeat anyway to get size and be confident
                     raise PartialContentException('Partial response')
                 return response
@@ -245,12 +245,12 @@ class InstagramScraper(object):
         self.session.headers.update({'X-CSRFToken': req.cookies['csrftoken'], 'X-Instagram-AJAX': '1'})
 
         self.session.headers.update({'Referer': BASE_URL[:-1] + checkpoint_url})
-        mode = input('Choose a challenge mode (0 - SMS, 1 - Email): ')
+        mode = int(input('Choose a challenge mode (0 - SMS, 1 - Email): '))
         challenge_data = {'choice': mode}
         challenge = self.session.post(BASE_URL[:-1] + checkpoint_url, data=challenge_data, allow_redirects=True)
         self.session.headers.update({'X-CSRFToken': challenge.cookies['csrftoken'], 'X-Instagram-AJAX': '1'})
 
-        code = input('Enter code received: ')
+        code = int(input('Enter code received: '))
         code_data = {'security_code': code}
         code = self.session.post(BASE_URL[:-1] + checkpoint_url, data=code_data, allow_redirects=True)
         self.session.headers.update({'X-CSRFToken': code.cookies['csrftoken']})
@@ -1058,6 +1058,9 @@ class InstagramScraper(object):
     @staticmethod
     def save_json(data, dst='./'):
         """Saves the data to a json file."""
+        if not os.path.exists(os.path.dirname(dst)):
+            os.makedirs(os.path.dirname(dst))
+            
         if data:
             with open(dst, 'wb') as f:
                 json.dump(data, codecs.getwriter('utf-8')(f), indent=4, sort_keys=True, ensure_ascii=False)
