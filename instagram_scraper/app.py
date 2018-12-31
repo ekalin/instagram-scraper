@@ -653,7 +653,7 @@ class InstagramScraper(object):
 
         item = {'urls': [profile_pic_url], 'username': username, 'shortcode':'', 'created_time': 1286323200, '__typename': 'GraphProfilePic'}
 
-        profile_pic_basename = item['urls'][0].split('/')[-1]
+        profile_pic_basename = item['urls'][0].split('/')[-1].split('?')[0];
         if self.latest is False or self.needs_to_download_profile_pic(username, dst, profile_pic_basename) is True:
             for item in tqdm.tqdm([item], desc='Searching {0} for profile pic'.format(username), unit=" images",
                                   ncols=0, disable=self.quiet):
